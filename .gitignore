@@ -1,0 +1,73 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+videos/
+manim_scripts/
+media/
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+env/
+*.sqlite3
+pip-log.txt
+pip-delete-this-directory.txt
+
+# FastAPI / Starlette
+*.log
+*.db
+instance/
+*.pid
+
+# Manim (cache + output)
+media/
+videos/
+manim_render/
+__temp__/
+*.mp4
+*.gif
+*.mov
+*.avi
+*.png
+*.svg
+*.pdf
+*.tex
+*.log
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Testing
+htmlcov/
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+
+# Watchdog/Watchgod
+.watchgodignore
+
+# Jupyter
+.ipynb_checkpoints/
