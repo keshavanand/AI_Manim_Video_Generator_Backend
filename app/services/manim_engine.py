@@ -2,6 +2,7 @@
 from pathlib import Path
 import subprocess
 from app.core import settings
+import os
 
 def generate_manim_file(path: str, code:str):
     try:
@@ -12,15 +13,16 @@ def generate_manim_file(path: str, code:str):
     except Exception as e:
         print(f"\nAn error occurred while creating the file: {e}\n")
 
-def run_manim(path:str):
-    print("\n Running File\n")
-    print("Current",path)
+def run_manim(path:str, scene_name):
+    print(f"\n Running File {scene_name}")
+    returned_value = ""
     try:
-        cmd = f'python -m manim -ql {path} Demo'
-        returned_value = subprocess.call(cmd,shell=True)
+        file_path = os.path.join(path, f"{scene_name}.py")
+        cmd = f'python -m manim -ql "{file_path}" "{scene_name}"'
+        returned_value = subprocess.check_output(cmd,text=True, shell=True)
     except Exception as e:
         print(f"\nAn error occurred while executing manim the file: {e}\n")
-    print('returned vale:', returned_value)
+    return returned_value
 
 
 def edit_manim(path:str):
@@ -35,6 +37,15 @@ def edit_manim(path:str):
     print("\nFile Edited\n")
 
 def create_seperate_scenes(scenes: list[dict]):
+    delete_all_files(settings.MANIM_PATH/Path("scenes/"))
     for scene in scenes:
-        generate_manim_file(settings.MANIM_PATH/Path(scene["scene_name"]+".py"), scene["code"])
+        generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene["scene_name"]+".py"), scene["code"])
         print(scene["scene_name"] + "Created")
+
+def delete_all_files(path: Path):
+    try:
+        for file in os.listdir(path):
+            os.remove(path/Path(file))
+            print(f"Deleted {file}")
+    except Exception as e:
+        print(f"\nAn error occurred: {e}\n")
