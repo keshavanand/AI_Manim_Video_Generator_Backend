@@ -13,7 +13,7 @@ def generate_manim_file(path: str, code:str):
     except Exception as e:
         print(f"\nAn error occurred while creating the file: {e}\n")
 
-def run_manim(path:str, scene_name):
+def run_manim(path:str, scene_name:str):
     print(f"\n Running File {scene_name}")
     returned_value = ""
     try:
@@ -36,6 +36,15 @@ def edit_manim(path:str):
 
     print("\nFile Edited\n")
 
+def edit_scene(path:str):
+    with open(path,"r+") as file:
+        lines = file.readlines()
+        file.seek(0)
+        file.truncate()
+        file.writelines(lines[1:-1])
+
+    print("\nFile Edited\n")
+
 def create_seperate_scenes(scenes: list[dict]):
     delete_all_files(settings.MANIM_PATH/Path("scenes/"))
     for scene in scenes:
@@ -49,3 +58,6 @@ def delete_all_files(path: Path):
             print(f"Deleted {file}")
     except Exception as e:
         print(f"\nAn error occurred: {e}\n")
+
+def update_scene(scene_name: str,scene_code:str):
+    generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene_name+".py"), scene_code)

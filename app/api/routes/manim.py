@@ -3,32 +3,10 @@ from pathlib import Path
 from fastapi import APIRouter
 from app.services import generate_code
 from app.core import settings
-from app.services import generate_manim_file, edit_manim, run_manim, create_seperate_scenes, parse_gemini_response
+from app.services import generate_manim_file, edit_manim, run_manim, create_seperate_scenes, parse_gemini_response, update_scene, edit_scene
 from fastapi.responses import FileResponse
-import os
-BASE_PROMPT='''You are a Python expert who writes Manim scene code. Given a user description, generate valid Manim classes.
-
-Your task is to divide the original animation into multiple separate Manim scenes, each representing one logical step or animation phase.This allows each scene to be rendered individually.
-
-Important Instructions:
-- Return the result as a json list of dictionaries.
-- Each dictionary must have:
-  - "scene_name": A unique name like Intro, Showing Dots etc.. based on the user request
-  - "code": A string containing the full raw Python code for that specific scene.
-- Only return the JSON array. Do not add any explanations or extra text.
-
-Example output format:
-[
-  {
-    "scene_name": "Intro",
-    "code": "from manim import *\\n\\nclass Intro(Scene):\\n    def construct(self):\\n        Code for intro scene"
-  },
-  {
-    "scene_name": "Showing_Dots",
-    "code": "from manim import *\\n\\nclass Showing_Dots(Scene):\\n    def construct(self):\\n        Code for showing dots"
-  }
-]
-'''
+from app.services import BASE_PROMPT, RE_BASE_PROMPT
+from app.schemas import Re_prompt
 
 router = APIRouter(prefix="/manim", tags=["Manim"])
 
@@ -56,6 +34,15 @@ def get_video(scene_name):
         return FileResponse(media_type="video/mp4", path=video_path,filename=f'{scene_name}')
     return {"error": "video not found"}
 
-@router.post("/re-prompt/{prompt}")
-def re_prompt(prompt):
-    pass
+@router.post("/re-prompt")
+def re_prompt(body: Re_prompt):
+    code = generate_code(RE_BASE_PROMPT.format(original_prompt=body.original_prompt,
+                                               scene_name=body.scene_name,
+                                               scene_code=body.code,
+                                               scene_output=body.output,
+                                               prompt=body.prompt)).text
+    print(code)
+    update_scene(body.scene_name,code)
+    edit_scene(settings.MANIM_PATH/Path("scenes/"+body.scene_name+".py"))
+    run_manim(settings.SCENES_FOLDER,scene_name=body.scene_name)
+    return {"success":"scene updated"}
