@@ -2,9 +2,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,get_current_user, get_password_hash
+from app.core import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,get_current_user, get_password_hash, get_user
 from app.schemas import Register_user, Token, User
-from app.models import User as User_model
+from app.models import User_model
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -12,6 +12,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/register/")
 async def register(user: Register_user):
     hashed_password = get_password_hash(user.password)
+    if await get_user(User_model,user.username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken",
+        )
     user = User_model(username=user.username, email=user.email, hashed_password=hashed_password)
     await user.insert()
 

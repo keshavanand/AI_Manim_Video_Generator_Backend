@@ -5,8 +5,6 @@ class Register_user(BaseModel):
     username: str
     email: str
     password: str
-    re_password: str
-
 
 class Token(BaseModel):
     access_token: str
@@ -20,7 +18,3 @@ class TokenData(BaseModel):
 class User(BaseModel):
     username: str
     email: str | None = None
-
-
-class UserInDB(User):
-    hashed_password: str
