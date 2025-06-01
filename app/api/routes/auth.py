@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,get_current_user, get_password_hash, get_user
-from app.schemas import Register_user, Token, User
+from app.schemas import Register_user, Token, User_Data
 from app.models import User_model
 from datetime import timedelta
 
@@ -39,7 +39,7 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/users/me/", response_model=User)
+@router.get("/users/me/", response_model=User_Data)
 async def read_users_me(
     current_user: Annotated[User_model, Depends(get_current_user)],
 ):

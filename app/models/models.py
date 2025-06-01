@@ -16,7 +16,8 @@ class Scene(Document):
     video_path: Optional[Path]= None
     scene_path: Path
     #  Add a reference to the Project it belongs to
-    owner: Optional[Link["User"]] = None
+    owner: Link["User"]
+    project: Link["Project"]
     class Settings:
         name= "scene"
 
@@ -27,21 +28,18 @@ class Project(Document):
     title: str
     description: Optional[str]= None
     original_prompt: str
-    # List of scene links
-    scenes: List[Link["Scene"]] = []
-    scene_list: List[Dict] = []
     project_path : Optional[Path]= None
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
+    full_video_path: Optional[Path] = None 
     class Settings:
         name = "projects"
+        fetch_links= True
 
 class User(Document):
     id: Optional[PydanticObjectId] = Field(default=None, alias="_id")
     username: str
     email: str
     hashed_password: str
-    projects: List[Link["Project"]] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:

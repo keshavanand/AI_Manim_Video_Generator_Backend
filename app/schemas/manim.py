@@ -1,9 +1,9 @@
 # Pydantic schemas for manim input/output
+from typing import Optional
 from pydantic import BaseModel
-
+from beanie import PydanticObjectId
 class Re_prompt(BaseModel):
-    original_prompt: str
-    scene_name:str
-    code: str
+    scene_Id: PydanticObjectId
+    code: Optional[str] = None
     prompt: str
-    output: str | None = ""
+    output: Optional[str] = None
