@@ -2,8 +2,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 from beanie import Document, Link, PydanticObjectId
-from typing import List, Optional, Dict
-from bson import ObjectId
+from typing import Optional
 from pydantic import Field
 
 class Scene(Document):

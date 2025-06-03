@@ -9,7 +9,7 @@ from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/register/")
+@router.post("/register/", status_code=status.HTTP_201_CREATED)
 async def register(user: Register_user):
     hashed_password = get_password_hash(user.password)
     if await get_user(User_model,user.username):
@@ -19,7 +19,7 @@ async def register(user: Register_user):
         )
     user = User_model(username=user.username, email=user.email, hashed_password=hashed_password)
     await user.insert()
-
+    return {"message": f"User {user.username} Registered Successfully"} 
 
 @router.post("/token")
 async def login_for_access_token(

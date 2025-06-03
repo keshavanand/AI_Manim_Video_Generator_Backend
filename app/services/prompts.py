@@ -43,3 +43,15 @@ Output after running this above code:
 
 Important only give back python code and follow this new user prompt{prompt} and update {scene_code} as required
 '''
+SCENE_PROMPT='''
+You are an expert Manim animation developer. I want you to create a single Manim scene based on the following description:
+
+Please return only a valid Python Manim class for this scene.
+
+Respond in the following JSON format:
+{
+  "scene_name": "Intro",
+  "code": "from manim import *\\n\\nclass Intro(Scene):\\n    def construct(self):\\n        # Your code here"
+}
+Ensure the code is complete, syntactically correct, and escape all backslashes and newlines correctly for JSON.
+'''

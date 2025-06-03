@@ -18,4 +18,3 @@ class TokenData(BaseModel):
 class User_Data(BaseModel):
     username: str
     email: str | None = None
-    projects: list[dict] | None = []

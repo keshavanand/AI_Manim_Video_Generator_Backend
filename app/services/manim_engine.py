@@ -51,6 +51,10 @@ def create_seperate_scenes(scenes: list[dict]):
         generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene["scene_name"]+".py"), scene["code"])
         print(scene["scene_name"] + "Created")
 
+def create_single_scene(scene: dict):
+    generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene["scene_name"]+".py"), scene["code"])
+    print(scene["scene_name"] + "Created")
+
 def delete_all_files(path: Path):
     try:
         for file in os.listdir(path):
