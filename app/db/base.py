@@ -3,7 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from contextlib import asynccontextmanager
 
-from app.models import User_model, Project_model, Scene_model
+from app.models import User as User_model, Project as Project_model,Scene as Scene_model
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

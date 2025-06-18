@@ -3,14 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,get_current_user, get_password_hash, get_user
-from app.schemas import Register_user, Token, User_Data
-from app.models import User_model
+from app.schemas import RegisterUser, Token, UserData
+from app.models import User as User_model
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register/", status_code=status.HTTP_201_CREATED) 
-async def register(user: Register_user)-> User_Data:
+async def register(user: RegisterUser)-> UserData:
     hashed_password = get_password_hash(user.password)
     if await get_user(User_model,user.username):
         raise HTTPException(
@@ -39,7 +39,7 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/users/me/", response_model=User_Data)
+@router.get("/users/me/", response_model=UserData)
 async def read_users_me(
     current_user: Annotated[User_model, Depends(get_current_user)],
 ):

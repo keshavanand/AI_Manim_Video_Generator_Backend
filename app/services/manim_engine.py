@@ -3,65 +3,68 @@ from pathlib import Path
 import subprocess
 from app.core import settings
 import os
+from typing import List, Dict
 
-def generate_manim_file(path: str, code:str):
+def generate_manim_file(path: Path, code: str) -> None:
+    """Write Manim code to a file."""
     try:
-        with open(path, "w") as file:
+        with open(path, "w", encoding="utf-8") as file:
             file.write(code)
-        print(f"\nFile '{path}' created successfully.\n")
-
     except Exception as e:
-        print(f"\nAn error occurred while creating the file: {e}\n")
+        # Use logging in production
+        print(f"Error creating file {path}: {e}")
 
-def run_manim(path:str, scene_name:str):
-    print(f"\n Running File {scene_name}")
-    returned_value = ""
+def run_manim(path: Path, scene_name: str) -> str:
+    """Run Manim CLI for a given scene file and return output."""
     try:
-        file_path = os.path.join(path, f"{scene_name}.py")
+        file_path = path / f"{scene_name}.py"
         cmd = f'python -m manim -ql "{file_path}" "{scene_name}"'
-        returned_value = subprocess.check_output(cmd,text=True, shell=True)
+        return subprocess.check_output(cmd, text=True, shell=True)
     except Exception as e:
-        print(f"\nAn error occurred while executing manim the file: {e}\n")
-    return returned_value
+        print(f"Error running Manim for {scene_name}: {e}")
+        return ""
 
+def edit_manim(path: Path) -> None:
+    """Edit main scenes file (custom logic)."""
+    try:
+        with open(path, "r+", encoding="utf-8") as file:
+            lines = file.readlines()
+            file.seek(0)
+            file.truncate()
+            file.write("scenes_list=\n")
+            file.writelines(lines[1:-1])
+    except Exception as e:
+        print(f"Error editing file {path}: {e}")
 
-def edit_manim(path:str):
-    with open(path,"r+") as file:
-        lines = file.readlines()
-        file.seek(0)
-        file.truncate()
-        file.writelines("scenes_list="+"\n")
-        file.seek(12)
-        file.writelines(lines[1:-1])
+def edit_scene(path: Path) -> None:
+    """Edit a single scene file (custom logic)."""
+    try:
+        with open(path, "r+", encoding="utf-8") as file:
+            lines = file.readlines()
+            file.seek(0)
+            file.truncate()
+            file.writelines(lines[1:-1])
+    except Exception as e:
+        print(f"Error editing scene file {path}: {e}")
 
-    print("\nFile Edited\n")
-
-def edit_scene(path:str):
-    with open(path,"r+") as file:
-        lines = file.readlines()
-        file.seek(0)
-        file.truncate()
-        file.writelines(lines[1:-1])
-
-    print("\nFile Edited\n")
-
-def create_seperate_scenes(scenes: list[dict]):
-    delete_all_files(settings.MANIM_PATH/Path("scenes/"))
+def create_seperate_scenes(scenes: List[Dict]) -> None:
+    """Create separate files for each scene."""
+    delete_all_files(settings.MANIM_PATH / "scenes")
     for scene in scenes:
-        generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene["scene_name"]+".py"), scene["code"])
-        print(scene["scene_name"] + "Created")
+        generate_manim_file(settings.MANIM_PATH / "scenes" / f"{scene['scene_name']}.py", scene["code"])
 
-def create_single_scene(scene: dict):
-    generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene["scene_name"]+".py"), scene["code"])
-    print(scene["scene_name"] + "Created")
+def create_single_scene(scene: Dict) -> None:
+    """Create a single scene file."""
+    generate_manim_file(settings.MANIM_PATH / "scenes" / f"{scene['scene_name']}.py", scene["code"])
 
-def delete_all_files(path: Path):
+def delete_all_files(path: Path) -> None:
+    """Delete all files in a directory."""
     try:
         for file in os.listdir(path):
-            os.remove(path/Path(file))
-            print(f"Deleted {file}")
+            os.remove(path / file)
     except Exception as e:
-        print(f"\nAn error occurred: {e}\n")
+        print(f"Error deleting files in {path}: {e}")
 
-def update_scene(scene_name: str,scene_code:str):
-    generate_manim_file(settings.MANIM_PATH/Path("scenes/"+scene_name+".py"), scene_code)
+def update_scene(scene_name: str, scene_code: str) -> None:
+    """Update a scene file with new code."""
+    generate_manim_file(settings.MANIM_PATH / "scenes" / f"{scene_name}.py", scene_code)

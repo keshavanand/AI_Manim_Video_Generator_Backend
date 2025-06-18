@@ -1,6 +1,8 @@
 # Pydantic schemas for user registration/auth
 from pydantic import BaseModel, EmailStr, constr
-class Register_user(BaseModel):
+from pydantic import validator
+
+class RegisterUser(BaseModel):
     email: EmailStr  # already includes email pattern validation
     username: constr(
         strip_whitespace=True,
@@ -9,7 +11,25 @@ class Register_user(BaseModel):
         max_length=20,
         pattern=r"^[a-zA-Z0-9_-]+$"
     )
-    password: constr(min_length=8)
+    password: constr(min_length=8, max_length=128)
+    
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not any(c.islower() for c in value):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not any(c.isupper() for c in value):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Password must contain at least one digit")
+        if not any(c in "@$!%*?&" for c in value):
+            raise ValueError("Password must contain at least one special character (@$!%*?&)")
+        return value
+
+    # Pydantic validator
+
+    @validator("password")
+    def password_strength(cls, v):
+        return cls.validate_password(v)
 
 class Token(BaseModel):
     access_token: str
@@ -20,6 +40,6 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-class User_Data(BaseModel):
+class UserData(BaseModel):
     username: str
     email: str | None = None
