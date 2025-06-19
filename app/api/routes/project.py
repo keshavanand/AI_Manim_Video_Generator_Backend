@@ -1,7 +1,8 @@
+from datetime import datetime
 from pathlib import Path
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas.manim import Project, CreateProject, UpdateProject
+from app.schemas.project import Project, CreateProject, UpdateProject
 from app.services import (
     generate_code, generate_manim_file, edit_manim, run_manim,
     create_seperate_scenes, parse_gemini_response, BASE_PROMPT
@@ -17,11 +18,11 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-@router.post("/create_project", status_code=status.HTTP_201_CREATED, response_model=List[dict])
+@router.post("/create_project", status_code=status.HTTP_201_CREATED, response_model=Project)
 async def create_project(
     project: CreateProject,
     current_user: Annotated[User_model, Depends(get_current_user)]
-) -> list:
+) -> Project:
     # Generate scenes from LLM
     prompt = f"{BASE_PROMPT}---This is user prompt:{project.prompt}---"
     code_response = generate_code(prompt).text
@@ -34,9 +35,9 @@ async def create_project(
 
     # Create project in DB
     new_project = Project_model(
-        title=f"Project-{project.title}",
+        title=f"Project-{project.prompt}",
         description=project.description,
-        original_prompt=prompt,
+        original_prompt=project.prompt,
         project_path=str(settings.MANIM_PATH),
         owner=current_user
     )
@@ -58,7 +59,7 @@ async def create_project(
         )
         await a_scene.create()
 
-    return scenes_list
+    return new_project.model_dump()
 
 @router.get("/get_projects", response_model=List[Project])
 async def get_projects(current_user: Annotated[User_model, Depends(get_current_user)]):
@@ -73,6 +74,7 @@ async def update_project(id: PydanticObjectId, req: UpdateProject):
     req_dict = {k: v for k, v in req.model_dump().items() if v is not None}
     if not req_dict:
         raise HTTPException(status_code=400, detail="No fields to update.")
+    req_dict['updated_at'] = datetime.utcnow()
     project = await Project_model.get(id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")

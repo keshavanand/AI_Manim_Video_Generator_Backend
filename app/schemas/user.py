@@ -2,8 +2,7 @@
 from pydantic import BaseModel, EmailStr, constr
 from pydantic import validator
 
-class RegisterUser(BaseModel):
-    email: EmailStr  # already includes email pattern validation
+class RegisterUser(BaseModel): 
     username: constr(
         strip_whitespace=True,
         to_lower=True,
@@ -11,6 +10,7 @@ class RegisterUser(BaseModel):
         max_length=20,
         pattern=r"^[a-zA-Z0-9_-]+$"
     )
+    email: EmailStr
     password: constr(min_length=8, max_length=128)
     
     @classmethod

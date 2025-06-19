@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 from beanie import Document, Link, PydanticObjectId
 from pydantic import Field, EmailStr
@@ -27,7 +28,7 @@ class Project(Document):
     original_prompt: str
     project_path: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     full_video_path: Optional[str] = None
 
     class Settings:
@@ -56,8 +57,48 @@ class Scene(Document):
 
     def __str__(self):
         return f"Scene(scene_name={self.scene_name}, project={self.project})"
+    
+class ChatRole(str, Enum):
+    user = "user"
+    assistant = "assistant"
+
+class ChatMessage(Document):
+    role: ChatRole
+    content: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    scene: Optional[Link[Scene]]= None
+    project: Optional[Link[Project]]= None
+
+    class Settings:
+        name= "chat_messages"
+        indexes = ["scene", "project"]
+
+    def __str__(self):
+        return f"{self.role}: {self.content[:30]}" 
+    
+class MediaType(str,Enum):
+    video = "video"
+    audio = "audio"
+    image = "image"
+    code = "code"
+    output = "ouptut"
+class Media(Document):
+    type: MediaType
+    path: str
+    mime_type: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    #Links
+    projects: Optional[Link[Project]] = None
+    scene: Optional[Link[Scene]] = None
+    is_final_output: bool = False # true for combined final video
+
+    class Settings:
+        name="media"
 
 # Rebuild models for forward references
 User.model_rebuild()
 Project.model_rebuild()
 Scene.model_rebuild()
+ChatMessage.model_rebuild()
+Media.model_rebuild()
