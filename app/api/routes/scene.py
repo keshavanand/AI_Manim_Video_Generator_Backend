@@ -1,6 +1,7 @@
 from pathlib import Path
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
+from app.schemas.scene import AddSceneSchema
 from app.services import (
     generate_code, run_manim, update_scene, edit_scene,
     parse_single_scene, create_single_scene, RE_BASE_PROMPT, SCENE_PROMPT
@@ -23,7 +24,7 @@ async def re_prompt(body: RePrompt):
     if not scene:
         raise HTTPException(status_code=404, detail="Scene not found")
     code = generate_code(RE_BASE_PROMPT.format(
-        original_prompt="demo neural network",
+        original_prompt=scene.scene_prompt,
         scene_name=scene.scene_name,
         scene_code=scene.scene_code,
         scene_output=scene.scene_output,
@@ -66,9 +67,9 @@ async def update_scene_api(id: PydanticObjectId, req: UpdateScene):
     await scene.update({"$set": req_dict})
     return {"detail": "Scene updated"}
 
-@router.post("/add_scene_with_prompt")
+@router.post("/add_scene_with_prompt", response_model=SceneSchema)
 async def add_scene_with_prompt(
-    req: SceneSchema,
+    req: AddSceneSchema,
     current_user: Annotated[User_model, Depends(get_current_user)]
 ):
     generated_scene = generate_code(
@@ -95,4 +96,4 @@ async def add_scene_with_prompt(
     )
 
     await scene.create()
-    return {"detail": f"Scene {scene.scene_name} added to db"}
+    return scene
