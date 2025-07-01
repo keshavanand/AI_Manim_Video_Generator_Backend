@@ -2,21 +2,38 @@ from datetime import datetime
 from pathlib import Path
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas.project import Project, CreateProject, UpdateProject
+from app.schemas import Project, CreateProject, ProjectPrompt, UpdateProject, LLMResponse
 from app.services import (
     generate_code, generate_manim_file, edit_manim, run_manim,
-    create_seperate_scenes, parse_gemini_response, BASE_PROMPT
+    create_seperate_scenes, parse_gemini_response, BASE_PROMPT,
+    create_folder_for_project, create_manim_project, create_db_entries,
+    systemPrompt, BASE_PROMPT, apply_bolt_artifact, initialize_project
 )
 from app.core import settings
 from typing import Annotated, List
+
+from app.services.llm_client import generate_code_new
 from .auth import get_current_user
 from app.models import User as User_model, Project as Project_model,Scene as Scene_model
-
 router = APIRouter(
     prefix="/project",
     tags=["Project"],
     dependencies=[Depends(get_current_user)]
 )
+
+@router.post("/create_new_Project", status_code=status.HTTP_201_CREATED)
+async def create_newProject(
+    prompt: ProjectPrompt,
+    current_user: Annotated[User_model, Depends(get_current_user)],
+    project_id: PydanticObjectId = None,
+):
+    # Generte content with llm
+    code_response= generate_code_new(prompt.prompt, BASE_PROMPT,systemPrompt(""))
+    parsed = code_response.parsed
+
+    project = await initialize_project(prompt, current_user, project_id, parsed)
+
+    return parsed  
 
 @router.post("/create_project", status_code=status.HTTP_201_CREATED, response_model=Project)
 async def create_project(

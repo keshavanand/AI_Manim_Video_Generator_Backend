@@ -19,6 +19,11 @@ class User(Document):
     def __str__(self):
         return f"User(username={self.username}, email={self.email})"
 
+class ProjectStatus(str, Enum):
+    queued= 'queued'
+    processing = 'processing'
+    complete = "complete"
+    error = "error"
 class Project(Document):
     """Project containing multiple scenes."""
     id: Optional[PydanticObjectId] = Field(default=None, alias="_id")
@@ -26,6 +31,8 @@ class Project(Document):
     title: str = Field(index=True)
     description: Optional[str] = None
     original_prompt: str
+    status: ProjectStatus = ProjectStatus.queued
+    error: Optional[str] = None
     project_path: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
@@ -37,6 +44,11 @@ class Project(Document):
     def __str__(self):
         return f"Project(title={self.title}, owner={self.owner})"
 
+class Status(str, Enum):
+    pending = 'pending'
+    generating = "generating"
+    ready = "ready"
+    error = "error"
 class Scene(Document):
     """Scene generated from a prompt and code."""
     id: Optional[PydanticObjectId] = Field(default=None, alias="_id")
@@ -46,12 +58,11 @@ class Scene(Document):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
     scene_prompt: Optional[str] = None
+    status: Status = Status.pending
     video_path: Optional[str] = None
     scene_path: str
     owner: Link[User]
     project: Link[Project]
-    status: str = "pending"  # pending, running, completed, failed
-
     class Settings:
         name = "scenes"
 
@@ -92,6 +103,7 @@ class Media(Document):
     projects: Optional[Link[Project]] = None
     scene: Optional[Link[Scene]] = None
     is_final_output: bool = False # true for combined final video
+    status: Status = Status.pending
 
     class Settings:
         name="media"

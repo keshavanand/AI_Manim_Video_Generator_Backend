@@ -13,5 +13,6 @@ class Settings(BaseSettings):
     VIDEO_PATH: Path = r'C:\Users\arshd\OneDrive\Desktop\Web-App-Natural-Language-Manim-Video\manim-generator\fastapi-manim-ai-backend\media\videos'
     SCENES_PATH: Path = r'C:\Users\arshd\OneDrive\Desktop\Web-App-Natural-Language-Manim-Video\manim-generator\fastapi-manim-ai-backend\app\manim\scenes.py'
     SCENES_FOLDER: Path = r'C:\Users\arshd\OneDrive\Desktop\Web-App-Natural-Language-Manim-Video\manim-generator\fastapi-manim-ai-backend\app\manim\scenes'
+    MANIM_PROJECTS: Path =r'C:\Users\arshd\OneDrive\Desktop\Web-App-Natural-Language-Manim-Video\Manim_Projects'
 settings = Settings()
 

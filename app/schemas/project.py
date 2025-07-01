@@ -1,9 +1,10 @@
 # Pydantic schemas for manim input/output
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
+from typing import List, Literal, Optional
 from pydantic import BaseModel
 from beanie import PydanticObjectId
-
+from app.models import ProjectStatus
 class CreateProject(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -23,3 +24,37 @@ class Project(BaseModel):
     description: Optional[str]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    status: ProjectStatus
+    error: Optional[str] = None
+    project_path: Optional[Path] = None
+
+class ProjectPrompt(BaseModel):
+    prompt: str 
+
+
+class FileEntry(BaseModel):
+  file_name: str
+  scene_name: str
+  filePath: str
+  status: str  # "created", "updated", or "deleted"
+  content: Optional[str] = None  # Omit if status == "deleted"
+
+class LLMResponse(BaseModel):
+  id: str
+  title: str
+  files: List[FileEntry]
+  commands: List[str]
+
+
+  
+class DiffModification(BaseModel):
+  path: str
+  type: Literal["diff", "file"]
+  # Only for type="diff"
+  diff: Optional[str] = None
+  # Only for type="file"
+  status: Optional[Literal["created", "updated", "deleted"]] = None
+  content: Optional[str] = None
+
+class DiffRequest(BaseModel):
+  modifications: List[DiffModification]
