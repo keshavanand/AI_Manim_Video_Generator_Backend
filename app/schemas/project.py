@@ -6,9 +6,11 @@ from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.models import ProjectStatus
 class CreateProject(BaseModel):
+    id: Optional[str] = None
+    prompt: str
     title: Optional[str] = None
     description: Optional[str] = None
-    prompt: str
+ 
 
 class UpdateProject(BaseModel):
     title: Optional[str] = None

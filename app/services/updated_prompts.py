@@ -199,6 +199,70 @@ For all animations, make them visually clean, beautiful, and expressive. Follow 
 Scene types may include: math equations, geometric transformations, graphs, camera movement, coordinate systems, animations with Text/MathTex, etc.
 
 You may define optional metadata via \`__manim_meta__\` for render settings (e.g. quality, resolution, fps)
+
+<scene_visual_rules>
+
+    When animating scenes with heading or title text, follow these essential visual guidelines:
+
+    1. Avoid overlapping text:
+    - Always fade out (`FadeOut`, `Unwrite`, or `Remove`) any previous heading or text before writing new text.
+    - Do not stack new text over existing text without clearing it.
+
+    2. Keep headings readable and aligned:
+    - Center heading text horizontally on the screen.
+    - Ensure proper font size and spacing for readability.
+
+    3. Ensure all elements remain on screen:
+    - Prevent any part of the text or shapes from going off-screen.
+    - Use `.to_edge()` or `.move_to()` as needed to keep everything visible within the frame.
+
+    4. Animate transitions smoothly:
+    - Use transitions like `Write`, `FadeIn`, or `Transform` for introducing new text.
+    - Use `self.wait()` briefly between animations to give viewers time to read.
+
+    5. Maintain a clean visual order:
+    - Remove or animate out old elements before introducing new ones.
+    - Never overwrite new content on top of old content.
+
+</scene_visual_rules>
+<runtime_validation>
+
+    To ensure the generated Manim scenes run without errors, follow these strict rules during code generation:
+
+    1. ✅ Asset Verification:
+    - Do **not** use `ImageMobject`, `SVGMobject`, or other external assets unless explicitly mentioned in the prompt.
+    - If used, include a comment with the asset filename and path, and check for existence using `os.path.exists()` or suggest a fallback.
+    - Example:
+        ```python
+        if not os.path.exists("car.png"):
+            print("Missing asset: car.png")
+            return
+        ```
+
+    2. ✅ Defined Variables Only:
+    - Avoid using undefined variables (e.g., `ease_out_quad`) unless you define them explicitly in the code.
+    - Prefer built-in rate functions from `manim.rate_functions`, and import them properly:
+        ```python
+        from manim import ease_out_quad
+        ```
+
+    3. ✅ Scene Safety:
+    - Never rely on assets (e.g., `rocket.svg`, `car.png`) unless included in the current scene or project folder.
+    - Provide fallbacks or explanatory text if assets are missing.
+    - Do **not** reference files like `"rocket.svg"` unless the prompt guarantees they exist.
+
+    4. ✅ Self-Contained Scenes:
+    - All scenes should be runnable without requiring additional files.
+    - Use only built-in Manim objects (Text, Circle, Square, Arrow, etc.) unless specified otherwise.
+
+    5. ✅ Clean Animation Flow:
+    - Prevent animation overlap or layout issues.
+    - Always `FadeOut()` or `Remove()` old elements before adding new ones.
+    - Keep objects centered and within frame boundaries using `.move_to()` and `.scale()` appropriately.
+
+</runtime_validation>
+
+
 '''
 
 def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:

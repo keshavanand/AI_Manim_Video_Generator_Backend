@@ -144,6 +144,7 @@ async def apply_bolt_artifact(data, project, manim_path,current_user):
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
+                print("Running code")
                 output = run_manim(file_path,file_entry.scene_name)
                 scene.scene_output = output
                 scene.video_path = str(Path(settings.VIDEO_PATH) / file_entry.file_name / "480p15" / f"{scene.scene_name}.mp4")

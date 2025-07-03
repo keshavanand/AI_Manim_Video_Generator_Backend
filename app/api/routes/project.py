@@ -23,37 +23,38 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-@router.post("/create_new_Project", status_code=status.HTTP_201_CREATED, response_model=LLMResponse)
+@router.post("/create_new_Project", status_code=status.HTTP_201_CREATED, response_model=Project)
 async def create_newProject(
-    prompt: ProjectPrompt,
+    cp: CreateProject,
     current_user: Annotated[User_model, Depends(get_current_user)],
-    project_id: PydanticObjectId = None,
-)->LLMResponse:
+)->Project:
     # if project already exist and user is editing it
-    if project_id:
-        project = await Project_model.get(project_id)
+    if cp.id:
+        print("Editing existing project")
+        project = await Project_model.get(cp.id)
         previous_files: LLMResponse = project.previous_files
 
-        code_response = generate_code_new(prompt.prompt, BASE_PROMPT, editSystemPrompt("", previous_files))
+        code_response = generate_code_new(cp.prompt, BASE_PROMPT, editSystemPrompt("", previous_files))
         parsed = code_response.parsed
-
+        print(f"Response:{parsed}")
         await apply_bolt_artifact(parsed, project, project.manim_path, current_user)
 
         updated_files = merge_llm_response(previous_files, parsed)
         project.previous_files = updated_files
         await project.save()
 
-        return parsed
+        return project
 
     # For new projects
-    code_response= generate_code_new(prompt.prompt, BASE_PROMPT,systemPrompt(""))
+    print("Creating new project")
+    code_response= generate_code_new(cp.prompt, BASE_PROMPT,systemPrompt(""))
     parsed: LLMResponse = code_response.parsed
     
-    project = await initialize_project(prompt, current_user, project_id, parsed)
+    project = await initialize_project(cp, current_user, cp.id, parsed)
     project.previous_files = parsed
     await project.save()
 
-    return parsed
+    return project
 
 @router.post("/create_project", status_code=status.HTTP_201_CREATED, response_model=Project)
 async def create_project(
