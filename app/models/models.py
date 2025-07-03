@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Optional
 from beanie import Document, Link, PydanticObjectId
 from pydantic import Field, EmailStr
+from app.schemas.llm_response import LLMResponse
 
 class User(Document):
     """User account model."""
@@ -34,9 +35,11 @@ class Project(Document):
     status: ProjectStatus = ProjectStatus.queued
     error: Optional[str] = None
     project_path: Optional[str] = None
+    manim_path: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     full_video_path: Optional[str] = None
+    previous_files: Optional[LLMResponse] = None
 
     class Settings:
         name = "projects"
@@ -65,7 +68,9 @@ class Scene(Document):
     project: Link[Project]
     class Settings:
         name = "scenes"
-
+        indexes = [
+                    [("scene_name", 1), ("project", 1)]  # compound index
+                ]
     def __str__(self):
         return f"Scene(scene_name={self.scene_name}, project={self.project})"
     

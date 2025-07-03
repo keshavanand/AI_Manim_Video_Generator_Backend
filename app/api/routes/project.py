@@ -2,12 +2,14 @@ from datetime import datetime
 from pathlib import Path
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas import Project, CreateProject, ProjectPrompt, UpdateProject, LLMResponse
+from app.schemas import Project, CreateProject, ProjectPrompt, UpdateProject
+from app.schemas.llm_response import LLMResponse
 from app.services import (
     generate_code, generate_manim_file, edit_manim, run_manim,
     create_seperate_scenes, parse_gemini_response, BASE_PROMPT,
     create_folder_for_project, create_manim_project, create_db_entries,
-    systemPrompt, BASE_PROMPT, apply_bolt_artifact, initialize_project
+    systemPrompt, BASE_PROMPT, apply_bolt_artifact, initialize_project,
+    editSystemPrompt, merge_llm_response
 )
 from app.core import settings
 from typing import Annotated, List
@@ -21,19 +23,37 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-@router.post("/create_new_Project", status_code=status.HTTP_201_CREATED)
+@router.post("/create_new_Project", status_code=status.HTTP_201_CREATED, response_model=LLMResponse)
 async def create_newProject(
     prompt: ProjectPrompt,
     current_user: Annotated[User_model, Depends(get_current_user)],
     project_id: PydanticObjectId = None,
-):
-    # Generte content with llm
+)->LLMResponse:
+    # if project already exist and user is editing it
+    if project_id:
+        project = await Project_model.get(project_id)
+        previous_files: LLMResponse = project.previous_files
+
+        code_response = generate_code_new(prompt.prompt, BASE_PROMPT, editSystemPrompt("", previous_files))
+        parsed = code_response.parsed
+
+        await apply_bolt_artifact(parsed, project, project.manim_path, current_user)
+
+        updated_files = merge_llm_response(previous_files, parsed)
+        project.previous_files = updated_files
+        await project.save()
+
+        return parsed
+
+    # For new projects
     code_response= generate_code_new(prompt.prompt, BASE_PROMPT,systemPrompt(""))
-    parsed = code_response.parsed
-
+    parsed: LLMResponse = code_response.parsed
+    
     project = await initialize_project(prompt, current_user, project_id, parsed)
+    project.previous_files = parsed
+    await project.save()
 
-    return parsed  
+    return parsed
 
 @router.post("/create_project", status_code=status.HTTP_201_CREATED, response_model=Project)
 async def create_project(

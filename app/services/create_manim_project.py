@@ -8,7 +8,7 @@ import subprocess
 from app.models import User as User_model, Project as Project_model,Scene as Scene_model, ProjectStatus, ChatMessage, ChatRole, Status
 from beanie import Document
 import re
-from app.schemas import LLMResponse
+from app.schemas.llm_response import LLMResponse
     
 # create foleders and update project_path
 def create_folder_for_project(id: PydanticObjectId, title: str)->str:
@@ -65,17 +65,16 @@ async def create_db_entries(prompt: str, user: User_model, title: str)->List[Doc
     return [project, chat]
 
 async def initialize_project(prompt,current_user, projecet_id, data):
-    title = data[0].title
-    if projecet_id:
-        project = Project_model.get(projecet_id)
-        return project
+    title = data.title
 
     project, chat = await create_db_entries(prompt.prompt, current_user, title)
     project_path = create_folder_for_project(project.id, project.title)
     project.project_path = project_path
-    await project.save()
 
     manim_path = create_manim_project(project.title, project_path)
+
+    project.manim_path = manim_path
+    await project.save()
 
     # Create/update file content from llm response
     await apply_bolt_artifact(data, project, manim_path,current_user)
@@ -108,56 +107,89 @@ def run_manim(path: Path, scene_name: str) -> str:
     
 async def apply_bolt_artifact(data, project, manim_path,current_user):
     try:
-        for artifact in data:
-            # Update project title
-            project.title = artifact.title
+        # Update project title
+        project.title = data.title
 
-            # Handle files
-            for file_entry in artifact.files:
-                file_path = os.path.join(manim_path, file_entry.filePath)
-                status = file_entry.status
-                content = file_entry.content
+        # Handle files
+        for file_entry in data.files:
+            file_path = os.path.join(manim_path, file_entry.filePath)
+            status = file_entry.status
+            content = file_entry.content
 
 
-                scene = await Scene_model.find_one(
-                    Scene_model.project==project, 
-                    Scene_model.scene_name==file_entry.scene_name
-                    )
+            scene = await Scene_model.find_one(
+                Scene_model.project.id==project.id, 
+                Scene_model.scene_name==file_entry.scene_name
+                )
 
-                if not scene:
+            if not scene:
 
-                    scene = Scene_model(
-                        scene_name=file_entry.scene_name,
-                        scene_code=content,
-                        status=Status.pending,
-                        scene_path=file_path,
-                        owner=current_user,
-                        project=project
-                    )
-                    await scene.create()
+                scene = Scene_model(
+                    scene_name=file_entry.scene_name,
+                    scene_code=content,
+                    status=Status.pending,
+                    scene_path=file_path,
+                    owner=current_user,
+                    project=project
+                )
+                await scene.create()
 
-                if status == "deleted":
-                    print(f"🗑️ Deleting {file_path}")
-                    await scene.delete()
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
-                else:
-                    print(f"💾 Writing to {file_path} (status: {status})")
-                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                    with open(file_path, "w", encoding="utf-8") as f:
-                        f.write(content)
-                    output = run_manim(file_path,file_entry.scene_name)
-                    scene.scene_output = output
-                    scene.video_path = str(Path(settings.VIDEO_PATH) / file_entry.file_name / "480p15" / f"{scene.scene_name}.mp4")
-                    await scene.save()
+            if status == "deleted":
+                print(f"🗑️ Deleting {file_path}")
+                await scene.delete()
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            else:
+                print(f"💾 Writing to {file_path} (status: {status})")
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                output = run_manim(file_path,file_entry.scene_name)
+                scene.scene_output = output
+                scene.video_path = str(Path(settings.VIDEO_PATH) / file_entry.file_name / "480p15" / f"{scene.scene_name}.mp4")
+                await scene.save()
 
-            # Handle commands
-            for command in artifact.commands:
-                print(f"🚀 Shell Command: {command}")
-                # Optionally run command
-                #run_manim()
+        # Handle commands
+        for command in data.commands:
+            print(f"🚀 Shell Command: {command}")
+            # Optionally run command
+            #run_manim()
 
     except Exception as e:
         print(f"❌ Error while parsing response: {e}")
 
     
+def merge_llm_response(previous: LLMResponse, updates: LLMResponse) -> LLMResponse:
+    if not updates:
+        return previous
+    
+    updated_files = updates.files
+    updated_map = {f.file_name:  f for f in updated_files}
+
+    merged_files = []
+    seen = set()
+
+    # Keep existing ones unless deleted or updated
+    for file in previous.files:
+        fname = file.file_name
+        if fname in updated_map:
+            update = updated_map[fname]
+            seen.add(fname)
+            if update.status == "deleted":
+                continue
+            else:
+                merged_files.append(update) #updated
+        else:
+            merged_files.append(file) # unchanged
+
+    # Add any new files that weren’t in the original list
+    for fname, update in updated_map.items():
+        if fname not in seen and update.status == "created":
+            merged_files.append(update)
+
+    return LLMResponse(
+        id=previous.id,
+        title=previous.title,
+        files=merged_files,
+        commands=updates.commands # Optional: merge/append instead if needed
+    )
