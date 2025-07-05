@@ -16,7 +16,7 @@ from typing import Annotated, List
 
 from app.services.llm_client import generate_code_new
 from .auth import get_current_user
-from app.models import User as User_model, Project as Project_model,Scene as Scene_model
+from app.models import User as User_model, Project as Project_model,Scene as Scene_model, ChatMessage, ChatRole
 router = APIRouter(
     prefix="/project",
     tags=["Project"],
@@ -34,6 +34,14 @@ async def create_newProject(
         project = await Project_model.get(cp.id)
         previous_files: LLMResponse = project.previous_files
 
+        # create chat message for the project
+        chat_message = ChatMessage(
+            role=ChatRole.user,
+            content=cp.prompt,
+            project=project)
+        await chat_message.create()
+
+
         code_response = generate_code_new(cp.prompt, BASE_PROMPT, editSystemPrompt("", previous_files))
         parsed = code_response.parsed
         print(f"Response:{parsed}")
@@ -43,16 +51,32 @@ async def create_newProject(
         project.previous_files = updated_files
         await project.save()
 
+        #add chat message for the llm response
+        chat_message = ChatMessage(
+            role=ChatRole.assistant,
+            content=parsed.message,
+            project=project)
+        await chat_message.create()
+
         return project
 
     # For new projects
     print("Creating new project")
     code_response= generate_code_new(cp.prompt, BASE_PROMPT,systemPrompt(""))
     parsed: LLMResponse = code_response.parsed
+
     
     project = await initialize_project(cp, current_user, cp.id, parsed)
     project.previous_files = parsed
     await project.save()
+
+    #add chat message for the llm response
+    chat_message = ChatMessage(
+        role=ChatRole.assistant,
+        content=parsed.message,
+        project=project)
+    await chat_message.create()
+
 
     return project
 

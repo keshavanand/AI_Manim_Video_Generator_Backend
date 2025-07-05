@@ -48,8 +48,6 @@ async def create_db_entries(prompt: str, user: User_model, title: str)->List[Doc
 
     project = Project_model(
         title=title,
-        description=prompt,
-        original_prompt=prompt,
         owner=user
     )
     await project.create()

@@ -30,8 +30,6 @@ class Project(Document):
     id: Optional[PydanticObjectId] = Field(default=None, alias="_id")
     owner: Link[User]
     title: str = Field(index=True)
-    description: Optional[str] = None
-    original_prompt: str
     status: ProjectStatus = ProjectStatus.queued
     error: Optional[str] = None
     project_path: Optional[str] = None
@@ -60,7 +58,6 @@ class Scene(Document):
     scene_output: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
-    scene_prompt: Optional[str] = None
     status: Status = Status.pending
     video_path: Optional[str] = None
     scene_path: str
@@ -82,12 +79,11 @@ class ChatMessage(Document):
     role: ChatRole
     content: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    scene: Optional[Link[Scene]]= None
     project: Optional[Link[Project]]= None
 
     class Settings:
         name= "chat_messages"
-        indexes = ["scene", "project"]
+        indexes = ["project"]
 
     def __str__(self):
         return f"{self.role}: {self.content[:30]}" 

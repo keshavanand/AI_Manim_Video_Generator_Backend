@@ -9,12 +9,10 @@ class CreateProject(BaseModel):
     id: Optional[str] = None
     prompt: str
     title: Optional[str] = None
-    description: Optional[str] = None
  
 
 class UpdateProject(BaseModel):
     title: Optional[str] = None
-    description: Optional[str] = None
 
 class UpdateScene(BaseModel):
     scene_name: Optional[str]
@@ -23,7 +21,6 @@ class UpdateScene(BaseModel):
 class Project(BaseModel):
     id: PydanticObjectId
     title: Optional[str]
-    description: Optional[str]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     status: ProjectStatus

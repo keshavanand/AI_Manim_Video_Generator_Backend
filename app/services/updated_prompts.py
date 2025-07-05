@@ -105,7 +105,8 @@ def systemPrompt(cwd: str)->str:
                     commands=[
                     "manim -pql scenes\circle_to_square.py CircleToSquare"
                     ]
-                )
+                ),
+            message="Generated a simple circle to square animation"
         Notes:
         - Alaways return filePpath with \ 
         - The id and title is of overall project not scene
@@ -302,22 +303,24 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
                 title="Binary Search Visualization",
                 files=[
                 FileEntry(
-                    file_name="binary_search_intro",
-                    scene_name="BinarySearchIntro",
-                    filePath="scenes\\binary_search_intro.py",
-                    status="updated",
-                    content=\"\"\"from manim import *
+                        file_name="binary_search_intro",
+                        scene_name="BinarySearchIntro",
+                        filePath="scenes\\binary_search_intro.py",
+                        status="updated",
+                        content=\"\"\"from manim import *
 
-            class BinarySearchIntro(Scene):
-            def construct(self):
-                # updated content here
-            \"\"\"
-                )
-                ],
-                commands=[
-                "manim -pqh scenes\\binary_search_intro.py BinarySearchIntro"
-                ]
-            )
+                class BinarySearchIntro(Scene):
+                def construct(self):
+                    # updated content here
+                \"\"\"
+                    )
+                    ],
+                    commands=[
+                    "manim -pqh scenes\\binary_search_intro.py BinarySearchIntro"
+                    ]
+                ),
+            message="Updated binary search intro scene with new content"
+        </output_format>
         <important> 
             - Always use Python object syntax, not JSON.
             - Never include unchanged files.
