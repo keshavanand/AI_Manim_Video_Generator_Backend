@@ -14,3 +14,4 @@ class LLMResponse(BaseModel):
   title: str
   files: List[FileEntry]
   commands: List[str]
+  message: Optional[str] = None  # Optional message from LLM
