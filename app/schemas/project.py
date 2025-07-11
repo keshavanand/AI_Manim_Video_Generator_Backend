@@ -14,6 +14,7 @@ class UpdateProject(BaseModel):
     title: Optional[str] = None
 
 class UpdateScene(BaseModel):
+    id: PydanticObjectId
     scene_name: Optional[str]
     scene_code: Optional[str]
 

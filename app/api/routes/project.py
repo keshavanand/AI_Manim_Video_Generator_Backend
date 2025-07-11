@@ -132,6 +132,7 @@ async def update_project(id: PydanticObjectId, req: UpdateProject):
         raise HTTPException(status_code=500, detail="Error updating project")
 
 
+
 @router.delete("/delete_project/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(id: PydanticObjectId):
     try:
@@ -140,9 +141,25 @@ async def delete_project(id: PydanticObjectId):
         if not project:
             logger.error("Project not found for deletion: %s", id)
             raise HTTPException(status_code=404, detail="Project not found")
-        await Scene_model.find(Scene_model.project.id == project.id).delete_many()
-        await Media.find(Media.project == project.id).delete_many()
-        await ChatMessage.find(ChatMessage.project.id == project.id).delete_many()
+
+        # Delete related scenes
+        try:
+            await Scene_model.find(Scene_model.project.id == project.id).delete_many()
+        except Exception as e:
+            logger.warning(f"No related scenes or error deleting scenes for project {id}: {e}")
+
+        # Delete related media
+        try:
+            await Media.find(Media.project == project.id).delete_many()
+        except Exception as e:
+            logger.warning(f"No related media or error deleting media for project {id}: {e}")
+
+        # Delete related chat messages
+        try:
+            await ChatMessage.find(ChatMessage.project.id == project.id).delete_many()
+        except Exception as e:
+            logger.warning(f"No related chat messages or error deleting chat messages for project {id}: {e}")
+
         await project.delete()
         logger.info("Project and its associated scenes, media, and files deleted: %s", id)
         return {"detail": "Project deleted"}

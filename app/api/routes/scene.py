@@ -4,14 +4,14 @@ from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.scene import AddSceneSchema
 from app.services import (
-    generate_code, run_manim, update_scene, edit_scene,
-    parse_single_scene, create_single_scene, RE_BASE_PROMPT, SCENE_PROMPT
+    generate_code, run_manim, update_scene, edit_scene, updateSceneFile,
+    parse_single_scene, create_single_scene, RE_BASE_PROMPT, SCENE_PROMPT,
 )
 from app.core import settings
 from app.schemas import RePrompt, UpdateScene, SceneSchema
 from typing import Annotated, List
 from .auth import get_current_user
-from app.models import User as User_model, Project as Project_model,Scene as Scene_model, Media
+from app.models import User as User_model, Project as Project_model,Scene as Scene_model, Media, Status
 from app.core.logging_config import logger
 
 router = APIRouter(
@@ -147,3 +147,28 @@ async def add_scene_with_prompt(
     except Exception as e:
         logger.error(f"Error adding scene with prompt for project {req.project_id}: {e}")
         raise HTTPException(status_code=500, detail="Error adding scene")
+    
+@router.post("/run_scene/{scene_id}", )
+async def run_scene(scene_id: PydanticObjectId):
+    try:
+        logger.info("Fetching scene")
+        scene:Scene_model = await Scene_model.get(scene_id)
+        if not scene:
+            raise HTTPException(status_code=404, detail="No scene found")
+
+        logger.info(f"Updating scene code:{scene.scene_name}")
+        updateSceneFile(scene.scene_path,scene.scene_code)
+
+        logger.info(f"Running scene:{scene.scene_name}")
+        output, status = run_manim(scene.scene_path, scene.scene_name)
+        scene.scene_output = output
+        if status=="success":
+            scene.status = Status.ready
+        scene.status = Status.error
+        await scene.save()
+        return {"detail": "Scene succesfully runned"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error while runing scene")
+        raise HTTPException(status_code=500, detail="Error running scene")

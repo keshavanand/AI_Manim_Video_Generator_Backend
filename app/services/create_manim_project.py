@@ -122,8 +122,9 @@ async def initialize_project(prompt, current_user, data):
 
 def run_manim(path: Path, scene_name: str) -> list[str]:
     """Run Manim CLI for a given scene file and return output or error."""
+    import os
     try:
-        cmd = f'python -m manim -ql "{path}" "{scene_name}"'
+        cmd = f'python -m manim -ql --disable_caching "{path}" "{scene_name}"'
         logger.info(f"Running Manim CLI: {cmd}")
         result = subprocess.run(
             cmd,
@@ -212,8 +213,8 @@ async def apply_bolt_artifact(data, project, manim_path, current_user):
                     logger.error(f"Error writing to file {file_path}: {e}")
                     continue
                 logger.info("Running code")
-                output, success = run_manim(file_path, file_entry.scene_name)
-                if success and success == "success":
+                output, status = run_manim(file_path, file_entry.scene_name)
+                if status and status == "success":
                     scene.status = Status.ready
                     media.status = Status.ready
                     media.path = str(Path(settings.VIDEO_PATH) / file_entry.file_name / "480p15" / f"{scene.scene_name}.mp4")
@@ -269,3 +270,14 @@ def merge_llm_response(previous: LLMResponse, updates: LLMResponse) -> LLMRespon
         files=merged_files,
         commands=updates.commands # Optional: merge/append instead if needed
     )
+
+
+def updateSceneFile(path:str, code:str):
+    logger.info(f"💾 Writing to {path} (status: updating)")
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(code)
+        logger.info(f"Wrote content to {path}")
+    except Exception as e:
+        logger.error(f"Error writing to file {path}: {e}")
