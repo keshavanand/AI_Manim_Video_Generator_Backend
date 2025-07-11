@@ -59,7 +59,6 @@ class Scene(Document):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
     status: Status = Status.pending
-    video_path: Optional[str] = None
     scene_path: str
     owner: Link[User]
     project: Link[Project]
@@ -96,8 +95,7 @@ class MediaType(str,Enum):
     output = "ouptut"
 class Media(Document):
     type: MediaType
-    path: str
-    mime_type: Optional[str] = None
+    path: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     #Links

@@ -106,7 +106,7 @@ def systemPrompt(cwd: str)->str:
                     "manim -pql scenes\circle_to_square.py CircleToSquare"
                     ]
                 ),
-            message="Generated a simple circle to square animation"
+            message="Generated a simple circle to square animation" //never return none for message always return something
         Notes:
         - Alaways return filePpath with \ 
         - The id and title is of overall project not scene
@@ -319,7 +319,7 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
                     "manim -pqh scenes\\binary_search_intro.py BinarySearchIntro"
                     ]
                 ),
-            message="Updated binary search intro scene with new content"
+            message="Updated binary search intro scene with new content" //never return none for message always return something
         </output_format>
         <important> 
             - Always use Python object syntax, not JSON.

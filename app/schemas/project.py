@@ -5,10 +5,9 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel
 from beanie import PydanticObjectId
 from app.models import ProjectStatus
-class CreateProject(BaseModel):
+class Prompt(BaseModel):
     id: Optional[str] = None
     prompt: str
-    title: Optional[str] = None
  
 
 class UpdateProject(BaseModel):
