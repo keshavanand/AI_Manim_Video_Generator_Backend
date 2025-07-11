@@ -16,8 +16,7 @@ def systemPrompt(cwd: str)->str:
 
         IMPORTANT:
             - Each file must contain a single self-contained Manim Scene class (with type annotations where possible).
-            - Do not reuse filenames; use descriptive filenames based on scene purpose (e.g., \`circle_to_square.py\`, \`intro_text_slide.py\`).
-            - File paths must be relative to the working directory: \`${cwd}\`.
+            - Do not reuse filenames; use descriptive filenames based on scene purpose (e.g., `circle_to_square.py`, `intro_text_slide.py`).            - File paths must be relative to the working directory: \`${cwd}\`.
             - No UI or HTML output required. You only return code, file metadata, and run instructions.
 
         DO NOT:
