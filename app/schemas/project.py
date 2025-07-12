@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Literal, Optional
 from pydantic import BaseModel
 from beanie import PydanticObjectId
-from app.models import ProjectStatus
+from app.models.enums import ProjectStatus
 class Prompt(BaseModel):
     id: Optional[str] = None
     prompt: str

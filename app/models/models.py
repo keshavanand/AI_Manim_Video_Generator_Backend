@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Optional
 from beanie import Document, Link, PydanticObjectId
 from pydantic import Field, EmailStr
+from app.models.enums import ProjectStatus
 from app.schemas.llm_response import LLMResponse
 
 class User(Document):
@@ -20,11 +21,7 @@ class User(Document):
     def __str__(self):
         return f"User(username={self.username}, email={self.email})"
 
-class ProjectStatus(str, Enum):
-    queued= 'queued'
-    processing = 'processing'
-    complete = "complete"
-    error = "error"
+
 class Project(Document):
     """Project containing multiple scenes."""
     id: Optional[PydanticObjectId] = Field(default=None, alias="_id")
