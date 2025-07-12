@@ -150,7 +150,7 @@ async def delete_project(id: PydanticObjectId):
 
         # Delete related media
         try:
-            await Media.find(Media.project == project.id).delete_many()
+            await Media.find_many(Media.projects.id == project.id).delete_many()
         except Exception as e:
             logger.warning(f"No related media or error deleting media for project {id}: {e}")
 

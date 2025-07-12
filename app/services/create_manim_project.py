@@ -6,9 +6,11 @@ from beanie import PydanticObjectId
 from slugify import slugify
 from app.core import settings
 import subprocess
-from app.models import User as User_model, Project as Project_model,Scene as Scene_model, ProjectStatus, ChatMessage, ChatRole, Status, Media, MediaType
+from app.core.tasks import run_manim_task
+from app.models import User as User_model, Project as Project_model,Scene as Scene_model, ChatMessage, ChatRole, Status, Media, MediaType
 from beanie import Document
 import re
+from app.models.enums import ProjectStatus
 from app.schemas.llm_response import LLMResponse
 from app.core.logging_config import logger
 
@@ -118,34 +120,6 @@ async def initialize_project(prompt, current_user, data):
     except Exception as e:
         logger.error(f"Error initializing project: {e}")
         return None
-
-
-def run_manim(path: Path, scene_name: str) -> list[str]:
-    """Run Manim CLI for a given scene file and return output or error."""
-    import os
-    try:
-        cmd = f'python -m manim -ql --disable_caching "{path}" "{scene_name}"'
-        logger.info(f"Running Manim CLI: {cmd}")
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            text=True,
-            capture_output=True  # captures both stdout and stderr
-        )
-
-        if result.returncode == 0:
-            logger.info(f"Manim ran successfully for scene: {scene_name}")
-            logger.debug(f"Manim output: {result.stdout}")
-            return [result.stdout, "success"]
-        else:
-            error_msg = f"[❌ Manim Error] Scene: {scene_name}\n{result.stderr}"
-            logger.error(error_msg)
-            return [error_msg, "error"]
-
-    except Exception as e:
-        fallback_error = f"[⚠️ Subprocess Exception] {scene_name}: {str(e)}"
-        logger.error(fallback_error)
-        return fallback_error
     
 
 async def apply_bolt_artifact(data, project, manim_path, current_user):
@@ -213,18 +187,8 @@ async def apply_bolt_artifact(data, project, manim_path, current_user):
                     logger.error(f"Error writing to file {file_path}: {e}")
                     continue
                 logger.info("Running code")
-                output, status = run_manim(file_path, file_entry.scene_name)
-                if status and status == "success":
-                    scene.status = Status.ready
-                    media.status = Status.ready
-                    media.path = str(Path(settings.VIDEO_PATH) / file_entry.file_name / "480p15" / f"{scene.scene_name}.mp4")
-                else:
-                    scene.status = Status.error
-                    media.status = Status.error
-                scene.scene_output = output
-                await scene.save()
-                await media.save()
-                logger.info(f"Updated scene output and video path for: {scene.scene_name}")
+                # afterward move this line to project routes
+                run_manim_task.delay(file_path,str(scene.id),str(media.id),file_entry.file_name)
 
         # Handle commands
         for command in data.commands:

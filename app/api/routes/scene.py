@@ -4,7 +4,7 @@ from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.scene import AddSceneSchema
 from app.services import (
-    generate_code, run_manim, update_scene, edit_scene, updateSceneFile,
+    generate_code, update_scene, edit_scene, updateSceneFile,
     parse_single_scene, create_single_scene, RE_BASE_PROMPT, SCENE_PROMPT,
 )
 from app.core import settings
@@ -13,7 +13,7 @@ from typing import Annotated, List
 from .auth import get_current_user
 from app.models import User as User_model, Project as Project_model,Scene as Scene_model, Media, Status
 from app.core.logging_config import logger
-
+from app.core.tasks import run_manim
 router = APIRouter(
     prefix="/scene",
     tags=["Scene"],
