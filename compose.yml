@@ -15,16 +15,18 @@ services:
     depends_on:
       - redis
       - db
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   celery:
     build:
       context: .
-      dockerfile: celery.Dockerfile
+      dockerfile: Dockerfile  # Same as FastAPI
     volumes:
       - manim_projects_data:/app/Manim_Projects
       - videos_data:/app/media
     depends_on:
       - redis
+    command: ["celery", "-A", "app.core.celery_app.celery", "worker", "--loglevel=info"]
 
   redis:
     image: redis:7
@@ -35,7 +37,11 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+    volumes:
+    - manim_db_data:/data/db
+
 
 volumes:
   manim_projects_data:
   videos_data:
+  manim_db_data:
