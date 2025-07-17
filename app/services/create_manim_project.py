@@ -31,7 +31,7 @@ def create_folder_for_project(id: PydanticObjectId, title: str) -> str:
 def create_manim_project(title: str, path: Path) -> str:
     try:
         title_slug = slugify(title)
-        full_path = str(path) + "\\" + title_slug
+        full_path = os.path.join(path, title)
         cmd = f'python -m manim init project "{full_path}" --default'
         logger.info(f"Running command to initialize manim project: {cmd}")
 

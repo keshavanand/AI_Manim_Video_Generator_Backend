@@ -89,7 +89,7 @@ def systemPrompt(cwd: str)->str:
             FileEntry(
                 file_name="circle_to_square",
                 scene_name="CircleToSquare",
-                filePath="scenes\circle_to_square.py",
+                filePath="scenes/circle_to_square.py",
                 status="created",
                 content=\"\"\"from manim import *
 
@@ -102,7 +102,7 @@ def systemPrompt(cwd: str)->str:
                     )
                     ],
                     commands=[
-                    "manim -pql scenes\circle_to_square.py CircleToSquare"
+                    "manim -pql scenes/circle_to_square.py CircleToSquare"
                     ]
                 ),
             message="Generated a simple circle to square animation" //never return none for message always return something
@@ -304,7 +304,7 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
                 FileEntry(
                         file_name="binary_search_intro",
                         scene_name="BinarySearchIntro",
-                        filePath="scenes\\binary_search_intro.py",
+                        filePath="scenes/binary_search_intro.py",
                         status="updated",
                         content=\"\"\"from manim import *
 
@@ -315,7 +315,7 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
                     )
                     ],
                     commands=[
-                    "manim -pqh scenes\\binary_search_intro.py BinarySearchIntro"
+                    "manim -pqh scenes/binary_search_intro.py BinarySearchIntro"
                     ]
                 ),
             message="Updated binary search intro scene with new content" //never return none for message always return something
