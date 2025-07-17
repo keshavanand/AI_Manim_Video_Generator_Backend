@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - manim_projects_data:/app/Manim_Projects
+      - videos_data:/app/media
+    depends_on:
+      - redis
+      - db
+
+  celery:
+    build:
+      context: .
+      dockerfile: celery.Dockerfile
+    volumes:
+      - manim_projects_data:/app/Manim_Projects
+      - videos_data:/app/media
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  db:
+    image: mongo
+    ports:
+      - "27017:27017"
+
+volumes:
+  manim_projects_data:
+  videos_data:
