@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: keshavanandsingh/manim:latest
+  IMAGE_NAME: keshavanandsingh/manim
   TAG: latest
 
 jobs:
