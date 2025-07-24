@@ -55,6 +55,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
+        print(payload)
     except InvalidTokenError:
         raise credentials_exception
     user = await get_user(User_model, username=token_data.username)
@@ -62,5 +63,5 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
-
-
+async def refersh_token(token: Annotated[str, Depends(oauth2_scheme)]):
+    pass

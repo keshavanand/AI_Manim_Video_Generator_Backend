@@ -14,7 +14,10 @@ app = FastAPI(
 log_startup_shutdown_events(app)
 
 origins = [
-     "http://localhost:5173"
+     "http://localhost:5173",
+     "https://ai-manim-video-generator-frontend-i6z2vjfhs.vercel.app/",
+     "https://manim.keshavanandsingh.co",
+     "https://ai-manim-video-generator-frontend.vercel.app"
 ]
 
 app.add_middleware(
