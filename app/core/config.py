@@ -16,7 +16,7 @@ class Settings_Deployment(BaseSettings):
     SCENES_FOLDER: Path = fr'{cwd}/manim/scenes'
     VIDEO_PATH: Path = fr'{cwd}/media/videos'
 
-    MANIM_PROJECTS: Path = fr'{root}/Manim_Projects'
+    MANIM_PROJECTS: Path = fr'{cwd}/Manim_Projects'
 
 
 class Settings_Production(BaseSettings):

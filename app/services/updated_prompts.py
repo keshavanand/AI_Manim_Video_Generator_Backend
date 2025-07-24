@@ -107,7 +107,7 @@ def systemPrompt(cwd: str)->str:
                 ),
             message="Generated a simple circle to square animation" //never return none for message always return something
         Notes:
-        - Alaways return filePpath with \ 
+        - Alaways return filePpath with / 
         - The id and title is of overall project not scene
         - Each `file` must be a full Python file. If `status = "deleted"`, omit `content`.
         - Always use unique file names and scene class names.

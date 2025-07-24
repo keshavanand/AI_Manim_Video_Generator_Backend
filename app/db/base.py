@@ -8,7 +8,7 @@ import os
 from app.core.logging_config import logger
 load_dotenv()
 
-db_url = "mongodb://localhost:27017" if os.getenv("DEBUG") == "True" else "mongodb://db:27017"
+db_url = "mongodb://db:27017"
 if os.getenv("DB_URL"):
     db_url= os.getenv("DB_URL")
 async def init_beanie_db():
