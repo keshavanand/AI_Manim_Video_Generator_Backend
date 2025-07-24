@@ -321,6 +321,7 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
             message="Updated binary search intro scene with new content" //never return none for message always return something
         </output_format>
         <important> 
+            - Alaways return filePpath with / 
             - Always use Python object syntax, not JSON.
             - Never include unchanged files.
             - Use "\\" in file paths.
