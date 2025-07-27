@@ -1,8 +1,9 @@
 # OAuth2 and user authentication
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException, Header, status
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,get_current_user, get_password_hash, get_user
+from app.core.auth import refresh_token
 from app.schemas import RegisterUser, Token, UserData
 from app.models import User as User_model
 from datetime import timedelta
@@ -24,7 +25,7 @@ async def register(user: RegisterUser)-> UserData:
 @router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> Token:
+) -> list[Token]:
     user = await authenticate_user(User_model, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -36,7 +37,14 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+
+    alpha_access_token_expires = timedelta(hours=24)
+    alpha_access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=alpha_access_token_expires
+    )
+    access_token = Token(access_token=access_token, token_type="bearer")
+    alpha_access_token = Token(access_token=alpha_access_token, token_type="aplha")
+    return [access_token, alpha_access_token]
 
 
 @router.get("/users/me/", response_model=UserData)
@@ -44,4 +52,10 @@ async def read_users_me(
     current_user: Annotated[User_model, Depends(get_current_user)],
 ):
     return current_user
+
+@router.get("/regenerate_token/", response_model=Token)
+async def regenerate_token(alpha_token: Optional[str] = Header(None)) -> Token:
+    if not alpha_token:
+        raise HTTPException(status_code=401, detail="Alpha token missing")
+    return await refresh_token(alpha_token)
 

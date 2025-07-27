@@ -4,13 +4,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 import jwt
-from jwt.exceptions import InvalidTokenError
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 from app.models import User as User_model
-from app.schemas.user import TokenData
+from app.schemas.user import Token, TokenData
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -42,7 +42,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,6 +55,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             raise credentials_exception
         token_data = TokenData(username=username)
         print(payload)
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="expired")
     except InvalidTokenError:
         raise credentials_exception
     user = await get_user(User_model, username=token_data.username)
@@ -63,5 +64,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
-async def refersh_token(token: Annotated[str, Depends(oauth2_scheme)]):
-    pass
+async def refresh_token(alphaToken)->Token:
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    user = await get_current_user(alphaToken)
+    if user:
+        access_token = create_access_token({"sub": user.username}, expires_delta=access_token_expires)
+        access_token = Token(access_token=access_token, token_type="bearer")
+        return access_token
+    raise HTTPException(status_code=401, detail="The refresh token is expired please login")
