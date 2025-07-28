@@ -12,6 +12,8 @@ from app.services.llm_client import generate_code_new
 from .auth import get_current_user
 from app.models import User as User_model, Project as Project_model, Scene as Scene_model, ChatMessage, ChatRole, Media
 from app.core.logging_config import logger
+import os
+import shutil
 
 router = APIRouter(
     prefix="/project",
@@ -150,7 +152,11 @@ async def delete_project(id: PydanticObjectId):
 
         # Delete related media
         try:
-            await Media.find_many(Media.projects.id == project.id).delete_many()
+            media = await Media.find_many(Media.projects.id == project.id).to_list()
+            for m in media:
+                if(os.path.isdir(m.path)):
+                    shutil.rmtree(m.path)
+                    await m.delete()
         except Exception as e:
             logger.warning(f"No related media or error deleting media for project {id}: {e}")
 
@@ -160,6 +166,8 @@ async def delete_project(id: PydanticObjectId):
         except Exception as e:
             logger.warning(f"No related chat messages or error deleting chat messages for project {id}: {e}")
 
+        if (os.path.isdir(project.project_path)):
+            shutil.rmtree(project.project_path)
         await project.delete()
         logger.info("Project and its associated scenes, media, and files deleted: %s", id)
         return {"detail": "Project deleted"}
