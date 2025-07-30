@@ -1,5 +1,7 @@
 
+import os
 from pathlib import Path
+import shutil
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.scene import AddSceneSchema
@@ -50,6 +52,10 @@ async def re_prompt(body: RePrompt):
     except Exception as e:
         logger.error(f"Error in re-prompt for scene {body.scene_Id}: {e}")
         raise HTTPException(status_code=500, detail="Error updating scene")
+    
+@router.post("/create_scene")
+async def create_scene(projectID: PydanticObjectId, scene: SceneSchema):
+    pass
 
 
 @router.get("/get_scenes", response_model=List[SceneSchema])
@@ -72,10 +78,16 @@ async def delete_scene(id: PydanticObjectId):
     try:
         logger.info(f"Deleting scene: {id}")
         scene = await Scene_model.get(id)
-        await Media.find_one(Media.scene.id == id).delete_one()
+        media = await Media.find_one(Media.scene.id == id)
+        if(media and os.path.exists(media.path)):
+            media_folder = Path(media.path).parent.parent
+            shutil.rmtree(media_folder)
+            await media.delete()
         if not scene:
             logger.error(f"Scene not found: {id}")
             raise HTTPException(status_code=404, detail="Scene not found")
+        if os.path.exists(scene.scene_path):
+            os.remove(scene.scene_path)
         await scene.delete()
         logger.info(f"Scene deleted: {id}")
         return {"detail": "Scene deleted"}

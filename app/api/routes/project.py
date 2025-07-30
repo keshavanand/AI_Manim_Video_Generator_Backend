@@ -14,6 +14,7 @@ from app.models import User as User_model, Project as Project_model, Scene as Sc
 from app.core.logging_config import logger
 import os
 import shutil
+from pathlib import Path
 
 router = APIRouter(
     prefix="/project",
@@ -154,8 +155,9 @@ async def delete_project(id: PydanticObjectId):
         try:
             media = await Media.find_many(Media.projects.id == project.id).to_list()
             for m in media:
-                if(os.path.isdir(m.path)):
-                    shutil.rmtree(m.path)
+                if(os.path.exists(m.path)):
+                    media_folder = Path(str(m.path)).parent.parent
+                    shutil.rmtree(media_folder)
                     await m.delete()
         except Exception as e:
             logger.warning(f"No related media or error deleting media for project {id}: {e}")
