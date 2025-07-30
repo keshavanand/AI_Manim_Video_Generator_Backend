@@ -160,6 +160,7 @@ async def apply_bolt_artifact(data, project, manim_path, current_user):
                 media = Media(
                         type=MediaType.video,
                         projects=project,
+                        path=str(Path(settings.VIDEO_PATH) / file_entry.file_name ),
                         scene=scene,
                         status=Status.pending
                     )

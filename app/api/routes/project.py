@@ -156,7 +156,7 @@ async def delete_project(id: PydanticObjectId):
             media = await Media.find_many(Media.projects.id == project.id).to_list()
             for m in media:
                 if(os.path.exists(m.path)):
-                    media_folder = Path(str(m.path)).parent.parent
+                    media_folder = Path(str(m.path)).parent.parent if m.status == "ready" else Path(str(m.path))
                     shutil.rmtree(media_folder)
                     await m.delete()
         except Exception as e:
