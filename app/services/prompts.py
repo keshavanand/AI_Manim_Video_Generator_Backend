@@ -1,4 +1,4 @@
-
+# old unsed prompts
 BASE_PROMPT='''You are a Python expert who writes Manim scene code. Given a user description, generate valid Manim classes.
 
 Your task is to divide the original animation into multiple separate Manim scenes, each representing one logical step or animation phase.This allows each scene to be rendered individually.

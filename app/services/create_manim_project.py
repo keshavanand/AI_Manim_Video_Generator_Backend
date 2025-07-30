@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 from typing import List
@@ -246,3 +245,27 @@ def updateSceneFile(path:str, code:str):
         logger.info(f"Wrote content to {path}")
     except Exception as e:
         logger.error(f"Error writing to file {path}: {e}")
+
+# recreate project and scenes files if deleted before running 
+def checkProjectFiles(scene_id: PydanticObjectId):
+    try:
+        # check if project exist
+        # if not intialize manim project with same project name and id
+        scene: Scene_model = Scene_model.get(scene_id)
+        project = scene.fetch_link(Scene_model.project)
+        if not os.path.isdir(project.manim_path):
+            create_folder_for_project(scene.project, project.title)
+            create_manim_project(project.title, project.project_path)
+
+        # check if scene file exist
+        # update code if no scene file create fresh
+        if not os.path.exists(scene.scene_path):
+            file_path = Path(scene.scene_path).parent
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(scene.scene_path, "w", encoding="utf-8") as f:
+                f.write(scene.scene_code)
+
+        # update previous files with new content
+    except Exception as e:
+        logger.error(f"Error  {e}")
+

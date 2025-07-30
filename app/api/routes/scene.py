@@ -12,6 +12,8 @@ from app.services import (
 from app.core import settings
 from app.schemas import RePrompt, UpdateScene, SceneSchema
 from typing import Annotated, List
+
+from app.services.create_manim_project import checkProjectFiles
 from .auth import get_current_user
 from app.models import User as User_model, Project as Project_model,Scene as Scene_model, Media, Status
 from app.core.logging_config import logger
@@ -163,6 +165,8 @@ async def add_scene_with_prompt(
 @router.post("/run_scene/{scene_id}", )
 async def run_scene(scene_id: PydanticObjectId):
     try:
+        logger.info("Checking if project and scene files exits otherwise intialize them")
+        checkProjectFiles(scene_id)
         logger.info("Fetching scene")
         scene:Scene_model = await Scene_model.get(scene_id)
         if not scene:

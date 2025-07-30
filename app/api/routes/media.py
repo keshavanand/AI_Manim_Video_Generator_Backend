@@ -20,6 +20,9 @@ async def get_video(scene_id: PydanticObjectId):
         media = await Media.find_one(
             Media.scene.id == scene_id
         )
+        if media.status == "error":
+            logger.error(f"Scene did not rendered has some errors see output for details")
+            raise HTTPException(status_code=404, detail="Scene Error")
         if not media or not media.path:
             logger.error(f"Video not found for scene: {scene_id}")
             raise HTTPException(status_code=404, detail="Video not found")
