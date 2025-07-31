@@ -24,7 +24,6 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-
 @router.post("/re-prompt")
 async def re_prompt(body: RePrompt):
     try:
@@ -73,6 +72,17 @@ async def get_scenes(projectID: PydanticObjectId):
     except Exception as e:
         logger.error(f"Error fetching scenes for project {projectID}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching scenes")
+    
+@router.get("/get_scene", response_model=SceneSchema)
+async def get_scene(sceneID: PydanticObjectId):
+    try:
+        logger.info(f"Fetching scene with id: {sceneID}")
+        scene = await Scene_model.get(sceneID)
+        return scene
+    except Exception as e:
+        logger.error(f"Error fetching scene for {sceneID}: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching scene")
+
 
 
 @router.delete("/delete_scene/{id}", status_code=status.HTTP_204_NO_CONTENT)

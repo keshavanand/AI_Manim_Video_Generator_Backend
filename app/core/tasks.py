@@ -11,6 +11,7 @@ from app.core.logging_config import logger
 from app.models import Status
 from app.core import settings
 from app.db.base import init_beanie_db
+from google.genai import types
 
 # create folders and update project_path
 def create_folder_for_project(id: PydanticObjectId, title: str) -> str:
@@ -134,3 +135,7 @@ def run_manim_task(file_path, scene_id, media_id, file_name):
         logger.info(f"Updated scene output and video path for: {scene.scene_name}")
     asyncio.run(update_scene_and_media())
     return None
+
+@celery.task
+def generate_code_new_task(user_prompt: str, base_prompt: str, system_prompt: str, modifications: str = "") -> types.GenerateContentResponse:
+    pass
