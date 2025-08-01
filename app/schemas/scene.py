@@ -10,6 +10,7 @@ class SceneSchema(BaseModel):
     scene_output: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    status: Optional[str] = ""
 
 class RePrompt(BaseModel):
     scene_Id: PydanticObjectId

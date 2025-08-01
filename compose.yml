@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: keshavanandsingh/manim:latest
     ports:
       - "8000:8000"
     env_file:
@@ -21,6 +22,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile  # Same as FastAPI
+    image: keshavanandsingh/manim:latest
     volumes:
       - manim_projects_data:/app/Manim_Projects
       - videos_data:/app/media

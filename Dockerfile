@@ -10,6 +10,10 @@ RUN apt-get update -o Acquire::ForceIPv4=true && \
         libgl1 && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt update && apt install -y \
+    texlive-full \
+    && apt clean
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
