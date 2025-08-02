@@ -345,3 +345,10 @@ def editSystemPrompt(cwd: str, previous_files: LLMResponse) -> str:
             - If the user requests updates to multiple scenes, return a FileEntry for each one using their original file attributes and updated content.
             - If the user describes a change without naming the scene, you must determine the most relevant scene from previous_files and apply the update there.
 '''
+
+enhanced_promt ='''
+Improve this prompt by making it more descriptive, visually engaging, and optimized for generating a clear, accurate Manim animation. 
+Use mathematical terminology where appropriate, suggest camera angles or animation styles if missing, and ensure the instructions are 
+specific enough for a Manim scene to be rendered effectively and ----keep it short one parahgraph only and split it into multiple scenes as 
+requested by user.
+'''

@@ -8,13 +8,14 @@ from app.services import (
     initialize_project, apply_bolt_artifact
 )
 from typing import Annotated, List
-from app.services.llm_client import generate_code_new
+from app.services.llm_client import enahnce_prompt, generate_code_new
 from .auth import get_current_user
 from app.models import User as User_model, Project as Project_model, Scene as Scene_model, ChatMessage, ChatRole, Media
 from app.core.logging_config import logger
 import os
 import shutil
 from pathlib import Path
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(
     prefix="/project",
@@ -178,3 +179,12 @@ async def delete_project(id: PydanticObjectId):
     except Exception as e:
         logger.error(f"Error deleting project {id}: {e}")
         raise HTTPException(status_code=500, detail="Error deleting project")
+
+
+@router.post("/enhance_prompt")
+def enhance_prompt(prompt: str)-> StreamingResponse:
+    try:
+        return StreamingResponse(enahnce_prompt(prompt), media_type="text/plain")
+    except Exception as e:
+        logger.error(f"Error enhancing prompt: {e}")
+        raise HTTPException(status_code=500, detail="Error enhancing prompt")
