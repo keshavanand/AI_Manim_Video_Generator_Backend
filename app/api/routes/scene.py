@@ -198,3 +198,22 @@ async def run_scene(scene_id: PydanticObjectId):
     except Exception as e:
         logger.error("Error while runing scene")
         raise HTTPException(status_code=500, detail="Error running scene")
+
+@router.post("add_scene/")
+async def add_scene(req,current_user: Annotated[User_model, Depends(get_current_user)]):
+    try:
+        logger.info("adding scene named {req.scene_title}")
+        project = await Project_model.get(req.project_id)
+        scene = Scene_model(
+            scene_name=req.scene_title,
+            scene_path="",
+            owner=current_user,
+            project=project
+        )
+        await scene.save()
+        return {"detail": "Scene added"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error while adding scene {e}")
+        raise HTTPException(status_code=500, detail="Error adding scene")
