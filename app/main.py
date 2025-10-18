@@ -16,7 +16,7 @@ log_startup_shutdown_events(app)
 origins = [
      "http://localhost:5173",
      "https://ai-manim-video-generator-frontend-i6z2vjfhs.vercel.app/",
-     "https://manim.keshavanandsingh.co",
+     "https://manim.keshavsingh.dev",
      "https://ai-manim-video-generator-frontend.vercel.app"
 ]
 
